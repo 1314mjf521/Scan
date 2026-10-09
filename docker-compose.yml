@@ -1,0 +1,25 @@
+services:
+  asset-desk:
+    build: .
+    image: asset-desk:local
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_PATH: /app/data/assets.sqlite
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    ports:
+      - "${ASSET_BIND_IP:-127.0.0.1}:${ASSET_PORT:-3001}:3001"
+    volumes:
+      - asset-data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+volumes:
+  asset-data:
